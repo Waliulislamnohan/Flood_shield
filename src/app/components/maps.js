@@ -16,8 +16,6 @@ import L from "leaflet";
 
 import * as turf from "@turf/turf";
 
-
-
 // **NEW:** Import required libraries for GeoTIFF handling
 import georaster from "georaster";
 import GeoRasterLayer from "georaster-layer-for-leaflet";
@@ -46,10 +44,14 @@ export default function MapCoordinates() {
   const [rivers, setRivers] = useState(null);
   const [floodData, setFloodData] = useState(null);
   const [showFlood, setShowFlood] = useState(false); // State to control flood layer visibility
-  const [geoRasterLayer, setGeoRasterLayer] = useState(null); // **NEW**
+  const [geoRasterLayers, setGeoRasterLayers] = useState([]); // Array to hold multiple GeoTIFF Layers
   const [showFloodButtons, setShowFloodButtons] = useState(false);
   const [selectedYear, setSelectedYear] = useState(null);
   const [showYearButtons, setShowYearButtons] = useState(false); // **NEW** State to show/hide the year buttons for Flood
+  const [showPopulationButtons, setShowPopulationButtons] = useState(false); 
+  const [showYearButtons1, setShowYearButtons1] = useState(false);
+  // State to track selected flood year
+  const [selectedYear1, setSelectedYear1] = useState(null);
 
 
   const [geoData, setGeoData] = useState({
@@ -57,12 +59,15 @@ export default function MapCoordinates() {
     lng: 90.3563,
   });
   const center = [geoData.lat, geoData.lng];
+
   const isCacheValid = (timestamp) => {
     const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
     return Date.now() - timestamp < CACHE_DURATION;
   };
+
   // Fetch the data from the first API
   useEffect(() => {
+
     const CACHE_DURATION = 60 * 60 * 1000; // Cache duration in milliseconds (1 hour)
   
     const isCacheValid = (timestamp) => {
@@ -81,7 +86,6 @@ export default function MapCoordinates() {
           return; // Use cached data if valid
         }
       }
-  
       try {
         const response = await fetch(
           "https://ffwc-api.bdservers.site/data_load/stations/",
@@ -90,25 +94,27 @@ export default function MapCoordinates() {
         const data = await response.json();
         setStations(data); // Store station data in state
         setFilteredStations(data); // Initially, all stations are shown
-  
-        // Cache the data
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({ data, timestamp: Date.now() })
-        );
+
+                // Cache the data
+                localStorage.setItem(
+                  cacheKey,
+                  JSON.stringify({ data, timestamp: Date.now() })
+                );
+
+
       } catch (error) {
         console.error("Error fetching station data:", error);
-  
-        // Use cached data if available
-        if (cachedData) {
-          const parsedData = JSON.parse(cachedData);
-          setStations(parsedData.data);
-          setFilteredStations(parsedData.data);
-        }
+               // Use cached data if available
+               if (cachedData) {
+                const parsedData = JSON.parse(cachedData);
+                setStations(parsedData.data);
+                setFilteredStations(parsedData.data);
+              }
       }
     };
-  
+
     const fetchRecentWaterLevels = async () => {
+
       const cacheKey = "recentWaterLevelsData";
       const cachedData = localStorage.getItem(cacheKey);
   
@@ -119,7 +125,7 @@ export default function MapCoordinates() {
           return; // Use cached data if valid
         }
       }
-  
+
       try {
         const response = await fetch(
           "https://ffwc-api.bdservers.site/data_load/modified-observed/",
@@ -127,15 +133,16 @@ export default function MapCoordinates() {
         );
         const data = await response.json();
         setRecentWaterLevels(data); // Store recent water levels in state
-  
-        // Cache the data
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({ data, timestamp: Date.now() })
-        );
+
+                // Cache the data
+                localStorage.setItem(
+                  cacheKey,
+                  JSON.stringify({ data, timestamp: Date.now() })
+                );
+
       } catch (error) {
         console.error("Error fetching recent water levels:", error);
-  
+          
         // Use cached data if available
         if (cachedData) {
           const parsedData = JSON.parse(cachedData);
@@ -143,13 +150,10 @@ export default function MapCoordinates() {
         }
       }
     };
-  
+
     fetchStations();
     fetchRecentWaterLevels();
   }, []);
-  
-
-
 
   ///////////////////////////////////////////////////
 
@@ -189,7 +193,7 @@ export default function MapCoordinates() {
 
   //       setGeoRasterLayer(layer);
   //       console.log("GeoTIFF layer created successfully.");
-  //       // Set the layer to the statlayere
+  //       // Set the layer to the state
   //     } catch (error) {
   //       console.error("Error fetching or parsing GeoTIFF:", error);
   //     }
@@ -201,60 +205,88 @@ export default function MapCoordinates() {
   // Function to fetch and set GeoTIFF layer based on year
    // Function to fetch and set GeoTIFF layer based on year
   // Function to fetch and set GeoTIFF layer based on year and color
-  const loadGeoTIFFLayer = async (year, color) => {
-    try {
-      console.log(`Fetching GeoTIFF for ${year}...`);
-      // Fetch the corresponding GeoTIFF file for the year from the public folder
-      const response = await axios.get(`/${year}.tif`, {
-        responseType: "arraybuffer", // Important for binary data
-      });
-
-      console.log(`${year} GeoTIFF fetched successfully.`);
-
-      // Parse the GeoTIFF using georaster
-      const tiff = await georaster(response.data);
-
-      console.log(`${year} GeoTIFF parsed successfully:`, tiff);
-
-      // Set bounds manually in case bounds are missing from the GeoTIFF
-      const bounds = tiff.bounds || [
-        [21.0, 88.0], // Southwest corner [lat, lon]
-        [26.0, 92.5], // Northeast corner [lat, lon]
-      ];
-
-      // Create a GeoRasterLayer to display on the map
-      const layer = new GeoRasterLayer({
-        georaster: tiff,
-        opacity: 0.7, // Adjust opacity for better visibility
-        resolution: 256, // Adjust for performance vs. quality
-        pixelValuesToColorFn: (values) => {
-          if (values[0] > 0) {
-            return color; // Dynamic color passed based on the year
-          } else {
-            return null; // No color for zero or other values
-          }
-        },
-        zIndex: 1000, // Ensure that the layer is rendered above other base layers
-        bounds: bounds, // Manually set bounds if they are not available
-      });
-
-      setGeoRasterLayer(layer); // Set the layer to the state
-      setSelectedYear(year); // Set the currently selected year
-      console.log(`${year} GeoTIFF layer created successfully.`);
-    } catch (error) {
-      console.error(`Error fetching or parsing GeoTIFF for ${year}:`, error);
-    }
-  };
+    // Function to fetch and add a GeoTIFF layer
+    const loadGeoTIFFLayer = async (year, filename, color) => {
+      try {
+        console.log(`Fetching GeoTIFF for ${filename}...`);
+        // Fetch the corresponding GeoTIFF file from the public folder
+        const response = await axios.get(`/${filename}.tif`, {
+          responseType: "arraybuffer", // Important for binary data
+        });
+  
+        console.log(`${filename} GeoTIFF fetched successfully.`);
+  
+        // Parse the GeoTIFF using georaster
+        const tiff = await georaster(response.data);
+  
+        console.log(`${filename} GeoTIFF parsed successfully:`, tiff);
+  
+        // Set bounds manually in case bounds are missing from the GeoTIFF
+        const bounds = tiff.bounds || [
+          [21.0, 88.0], // Southwest corner [lat, lon]
+          [26.0, 92.5], // Northeast corner [lat, lon]
+        ];
+  
+        // Create a GeoRasterLayer to display on the map
+        const layer = new GeoRasterLayer({
+          georaster: tiff,
+          opacity: 0.5, // Adjust opacity for better visibility (lower opacity makes it more subtle)
+          resolution: 256, // Adjust for performance vs. quality
+          pixelValuesToColorFn: (values) => {
+            if (values[0] > 0) {
+              return color; // Dynamic color passed based on the year
+            } else {
+              return null; // No color for zero or other values
+            }
+          },
+          zIndex: 1000, // Ensure that the layer is rendered above other base layers
+          bounds: bounds, // Manually set bounds if they are not available
+        });
+  
+        // Add the new layer to the array of layers
+        setGeoRasterLayers((prevLayers) => [...prevLayers, { year, layer }]); // Keep previous layers
+        console.log(`${filename} GeoTIFF layer created successfully.`);
+      } catch (error) {
+        console.error(`Error fetching or parsing GeoTIFF for ${filename}:`, error);
+      }
+    };
 
   // Function to handle year button click with corresponding color
+  // Function to handle year button click with corresponding color
+  // const handleYearButtonClick = (year) => {
+  //   if (year === "2019") {
+  //     loadGeoTIFFLayer("2019", "rgba(128, 0, 128, 0.7)"); // Purple with lower opacity
+  //   } else if (year === "2020") {
+  //     loadGeoTIFFLayer("2020", "rgba(255, 165, 0, 0.7)"); // Orange with lower opacity
+  //   } else if (year === "2021") {
+  //     loadGeoTIFFLayer("2021", "rgba(0, 128, 128, 0.7)"); // Teal with lower opacity
+  //   }
+  // };
+
+  // const handleYearButtonClick1 = (year) => {
+  //   if (year === "2019") {
+  //     loadGeoTIFFLayer("Population_2019", "rgba(128, 0, 128, 0.7)"); // Purple with lower opacity
+  //   } else if (year === "2020") {
+  //     loadGeoTIFFLayer("Population_2020", "rgba(255, 165, 0, 0.7)"); // Orange with lower opacity
+  //   } else if (year === "2021") {
+  //     loadGeoTIFFLayer("2021", "rgba(0, 128, 128, 0.7)"); // Teal with lower opacity
+  //   }
+  // };
+
   const handleYearButtonClick = (year) => {
-    if (year === "2019") {
-      loadGeoTIFFLayer("2019", "rgba(128, 0, 128, 0.5)"); // Purple
-    } else if (year === "2020") {
-      loadGeoTIFFLayer("2020", "rgba(255, 165, 0, 0.5)"); // Orange
-    } else if (year === "2021") {
-      loadGeoTIFFLayer("2021", "rgba(34, 139, 34, 0.5)"); // Green (chosen to look good)
-    }
+    setSelectedYear(year); // Set selected flood year
+    const filename = `${year}`; // Example naming convention
+    const color = year === "2019" ? "rgba(255, 0, 0, 0.7)" : "rgba(128, 0, 128, 0.7)"; // Different colors for different years
+    loadGeoTIFFLayer(year, filename, color);
+  };
+
+  // "rgba(255, 165, 0, 0.7)" : "rgba(128, 0, 128, 0.7)"
+  
+  const handleYearButtonClick1 = (year) => {
+    setSelectedYear1(year); // Set selected population year
+    const filename = `Population_${year}`; // Example naming convention
+    const color = "rgba(0, 128, 128, 0.7)"; // Teal for population
+    loadGeoTIFFLayer(year, filename, color);
   };
 
 
@@ -264,11 +296,23 @@ export default function MapCoordinates() {
     setSelectedYear(null); // Reset the selected year
     setShowYearButtons(true); // Show year buttons when Flood is clicked
   };
+
+  const handlePopulationClick = () => {
+    setSelectedYear(null); // Reset the selected year
+    setShowYearButtons1(true); // Show year buttons when Flood is clicked
+  };
+
+    // Function to handle population year button click with corresponding color
+    const handlePopulationYearButtonClick = (year) => {
+      const filename = `Population_${year}`; // Construct filename based on year
+      loadGeoTIFFLayer(year, filename, "rgba(0, 128, 128, 0.3)"); // Teal for population
+    };
   
 
-  // Fetch the borders GeoJSON data with caching
+  // Fetch the borders GeoJSON data
   useEffect(() => {
     const fetchBorders = async () => {
+
       const cacheKey = "bordersData";
       const cachedData = localStorage.getItem(cacheKey);
 
@@ -288,11 +332,12 @@ export default function MapCoordinates() {
         const data = await response.json();
         setBorders(data);
 
-        // Cache the data
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({ data, timestamp: Date.now() })
-        );
+               // Cache the data
+               localStorage.setItem(
+                cacheKey,
+                JSON.stringify({ data, timestamp: Date.now() })
+              );
+
       } catch (error) {
         console.error("Error fetching borders GeoJSON data:", error);
         if (cachedData) {
@@ -303,8 +348,8 @@ export default function MapCoordinates() {
     fetchBorders();
   }, []);
 
-   // Fetch the rivers GeoJSON data with caching
-   useEffect(() => {
+  // Fetch the rivers GeoJSON data
+  useEffect(() => {
     const fetchRivers = async () => {
       const cacheKey = "riversData";
       const cachedData = localStorage.getItem(cacheKey);
@@ -316,7 +361,6 @@ export default function MapCoordinates() {
           return;
         }
       }
-
       try {
         const response = await fetch(
           "https://ffwc.rimes.int/assets/geojson/rivers-level-2.json",
@@ -324,12 +368,11 @@ export default function MapCoordinates() {
         );
         const data = await response.json();
         setRivers(data);
-
-        // Cache the data
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({ data, timestamp: Date.now() })
-        );
+                // Cache the data
+                localStorage.setItem(
+                  cacheKey,
+                  JSON.stringify({ data, timestamp: Date.now() })
+                );
       } catch (error) {
         console.error("Error fetching rivers GeoJSON data:", error);
         if (cachedData) {
@@ -340,8 +383,7 @@ export default function MapCoordinates() {
     fetchRivers();
   }, []);
 
-
-  // Fetch the flood-prone areas GeoJSON data with caching
+  // Fetch the flood-prone areas GeoJSON data
   useEffect(() => {
     const fetchFloodData = async () => {
       const cacheKey = "floodData";
@@ -354,7 +396,6 @@ export default function MapCoordinates() {
           return;
         }
       }
-
       try {
         const response = await fetch(
           "https://ffwc.rimes.int/assets/geojson/bd_adm2.json",
@@ -362,12 +403,11 @@ export default function MapCoordinates() {
         );
         const data = await response.json();
         setFloodData(data);
-
-        // Cache the data
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({ data, timestamp: Date.now() })
-        );
+                // Cache the data
+                localStorage.setItem(
+                  cacheKey,
+                  JSON.stringify({ data, timestamp: Date.now() })
+                );
       } catch (error) {
         console.error("Error fetching flood-prone areas GeoJSON data:", error);
         if (cachedData) {
@@ -427,8 +467,15 @@ export default function MapCoordinates() {
     opacity: 0.7,
   };
 
+  // Styling for flood-prone areas
+  const defaultFloodStyle = {
+    color: "#FFA500", // Orange color for flood areas
+    weight: 2,
+    opacity: 0.8,
+    fillOpacity: 0.4,
+  };
 
-
+  //..................................................
 
   const districtDangerStatus = useMemo(() => {
     const dangerStatus = {};
@@ -469,22 +516,23 @@ export default function MapCoordinates() {
   
     return dangerStatus;
   }, [stations, recentWaterLevels]);
-  
 
-  // Styling for flood-prone areas
-  const floodStyle = (feature) => {
-    const districtName = feature.properties.ADM2_EN;
-    const isDistrictInDanger = districtDangerStatus[districtName];
-  
-    return {
-      color: isDistrictInDanger ? "#FF0000" : "#00FF00", // Red if in danger, green otherwise
-      weight: 2,
-      opacity: 0.8,
-      fillOpacity: 0.4,
+    // Styling for flood-prone areas
+    const floodStyle = (feature) => {
+      const districtName = feature.properties.ADM2_EN;
+      const isDistrictInDanger = districtDangerStatus[districtName];
+    
+      return {
+        color: isDistrictInDanger ? "#FF0000" : "#00FF00", // Red if in danger, green otherwise
+        weight: 2,
+        opacity: 0.8,
+        fillOpacity: 0.4,
+      };
     };
-  };
 
-  //..................................................
+    
+
+  //...................................................
 
   // Function to handle events on each flood feature
   const onEachFloodFeature = (feature, layer) => {
@@ -537,41 +585,41 @@ export default function MapCoordinates() {
     setShowDropdown(false); // Hide the dropdown after selection
   };
 
-  // Add Tawk.to script and change widget position
-  useEffect(() => {
-    window.Tawk_API = window.Tawk_API || {};
-    window.Tawk_LoadStart = new Date();
-
-    const s1 = document.createElement("script");
-    s1.async = true;
-    s1.src = "https://embed.tawk.to/66ff799c37379df10df1958b/1i9av63aa";
-    s1.charset = "UTF-8";
-    s1.setAttribute("crossorigin", "*");
-    document.body.appendChild(s1);
-
-    // Inject custom CSS to change the widget position
-    const style = document.createElement("style");
-    style.innerHTML = `
-      .tawk-min-container {
-        left: 20px !important;
-        right: auto !important;
-      }
-      .tawk-chat-container {
-        left: 20px !important;
-        right: auto !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }) 
-
+    // Add Tawk.to script and change widget position
+    useEffect(() => {
+      window.Tawk_API = window.Tawk_API || {};
+      window.Tawk_LoadStart = new Date();
+  
+      const s1 = document.createElement("script");
+      s1.async = true;
+      s1.src = "https://embed.tawk.to/66ff799c37379df10df1958b/1i9av63aa";
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      document.body.appendChild(s1);
+  
+      // Inject custom CSS to change the widget position
+      const style = document.createElement("style");
+      style.innerHTML = `
+        .tawk-min-container {
+          left: 20px !important;
+          right: auto !important;
+        }
+        .tawk-chat-container {
+          left: 20px !important;
+          right: auto !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }) 
 
 
 
   return (
+    <div className="flow-root">
 <div style={{ position: "relative", height: "100vh", width: "100%" }}>
-  
-  {/* Search Box positioned on the right upper side */}
   <div style={{ position: "absolute", top: 10, right: 10, zIndex: 1000 }}>
+  {/* Search Box positioned on the right upper side */}
+  <div >
     {/* Search box */}
     <input
       type="text"
@@ -600,156 +648,134 @@ export default function MapCoordinates() {
       </ul>
     )}
 
+</div>
+
     {/* Historical Peak Button and Sub-buttons (Flood and Population) */}
-    <div
-      style={{
-        marginTop: "80px", // Pushing this container down below the search bar
-        backgroundColor: "#f8f9fa",
-        borderRadius: "8px",
-        padding: "10px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      {/* Historical Peak Button */}
-      <button
-        style={{
-          display: "block",
-          width: "100%",
-          backgroundColor: "#007bff",
-          color: "#fff",
-          border: "none",
-          padding: "10px 20px",
-          marginBottom: "10px",
-          borderRadius: "5px",
-          cursor: "pointer",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-          transition: "background-color 0.2s",
-        }}
-        onClick={() => setShowFloodButtons(!showFloodButtons)}
-        onMouseEnter={(e) => (e.target.style.backgroundColor = "#0056b3")}
-        onMouseLeave={(e) => (e.target.style.backgroundColor = "#007bff")}
-      >
-        Historical Peak
-      </button>
+    <div className="flex gap-2 ">
+    <div className="mt-20 bg-gray-100 bg-opacity-30 backdrop-blur-md rounded-lg p-4 shadow-lg float-left">
+  {/* Population Button */}
+  <button
+    style={{
+      display: "block",
+      width: "100%",
+      backgroundColor: "rgba(0, 123, 255, 0.8)", // Transparent blue background
+      color: "#fff",
+      border: "none",
+      padding: "10px 20px",
+      marginBottom: "10px",
+      borderRadius: "8px",
+      cursor: "pointer",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      transition: "background-color 0.2s",
+    }}
+    onClick={() => setShowPopulationButtons(!showPopulationButtons)}
+    onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(0, 86, 179, 0.8)")}
+    onMouseLeave={(e) => (e.target.style.backgroundColor = "rgba(0, 123, 255, 0.8)")}
+  >
+    Population
+  </button>
 
-      {/* Sub-buttons for Flood and Population */}
-      {showFloodButtons && (
-        <div>
-          {/* Population Button */}
-          <button
-            style={{
-              display: "block",
-              width: "100%",
-              backgroundColor: "#6c757d",
-              color: "#fff",
-              border: "none",
-              padding: "10px",
-              marginBottom: "10px",
-              borderRadius: "5px",
-              cursor: "pointer",
-              transition: "background-color 0.2s",
-            }}
-            onClick={() => setSelectedYear(null)} // Reset the GeoTIFF when changing categories
-            onMouseEnter={(e) => (e.target.style.backgroundColor = "#5a6268")}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "#6c757d")}
-          >
-            Population
-          </button>
-
-          {/* Flood Button */}
-          <button
-            style={{
-              display: "block",
-              width: "100%",
-              backgroundColor: "#28a745",
-              color: "#fff",
-              border: "none",
-              padding: "10px",
-              marginBottom: "10px",
-              borderRadius: "5px",
-              cursor: "pointer",
-              transition: "background-color 0.2s",
-            }}
-            onClick={handleFloodClick} // **Update** to show year buttons
-            onMouseEnter={(e) => (e.target.style.backgroundColor = "#218838")}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "#28a745")}
-          >
-            Flood
-          </button>
-
-          {/* Year Buttons for Flood */}
-          {showYearButtons && ( // Show year buttons only if Flood is clicked
-            <div style={{ marginTop: "10px" }}>
-              <button
-                style={{
-                  display: "block",
-                  width: "100%",
-                  backgroundColor: "#007bff",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px",
-                  marginBottom: "10px",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s",
-                }}
-                onClick={() => handleYearButtonClick("2019")}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = "#0056b3")}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = "#007bff")}
-              >
-                2019
-              </button>
-              <button
-                style={{
-                  display: "block",
-                  width: "100%",
-                  backgroundColor: "#007bff",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px",
-                  marginBottom: "10px",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s",
-                }}
-                onClick={() => handleYearButtonClick("2020")}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = "#0056b3")}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = "#007bff")}
-              >
-                2020
-              </button>
-              <button
-                style={{
-                  display: "block",
-                  width: "100%",
-                  backgroundColor: "#007bff",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px",
-                  marginBottom: "10px",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s",
-                }}
-                onClick={() => handleYearButtonClick("2021")}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = "#0056b3")}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = "#007bff")}
-              >
-                2021
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+  {/* Year Buttons for Population */}
+  {showPopulationButtons && (
+    <div style={{ marginTop: "10px" }}>
+      {["2019", "2020", "2021"].map((year) => (
+        <button
+          key={year}
+          style={{
+            display: "block",
+            width: "100%",
+            backgroundColor: selectedYear1 === year ? "rgba(0, 86, 179, 0.9)" : "rgba(0, 123, 255, 0.8)", // Change color if selected
+            color: "#fff",
+            border: "none",
+            padding: "10px",
+            marginBottom: "10px",
+            borderRadius: "8px",
+            cursor: "pointer",
+            transition: "background-color 0.2s",
+          }}
+          onClick={() => handleYearButtonClick1(year)}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(0, 86, 179, 0.8)")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = selectedYear1 === year ? "rgba(0, 86, 179, 0.9)" : "rgba(0, 123, 255, 0.8)")}
+        >
+          {year}
+        </button>
+      ))}
     </div>
-  </div>
-      {/* Button to toggle flood-prone areas */}
+  )}
+</div>
+
+{/* Flood Button and Year Selection on Right Side */}
+<div className="mt-20 bg-gray-100 bg-opacity-60 backdrop-blur-md rounded-lg p-4 shadow-lg float-right">
+  <button
+    style={{
+      display: "block",
+      width: "100%",
+      backgroundColor: "rgba(0, 123, 255, 0.8)", // Transparent blue background
+      color: "#fff",
+      border: "none",
+      padding: "10px 20px",
+      marginBottom: "10px",
+      borderRadius: "8px",
+      cursor: "pointer",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      transition: "background-color 0.2s",
+    }}
+    onClick={() => setShowFloodButtons(!showFloodButtons)}
+    onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(0, 86, 179, 0.8)")}
+    onMouseLeave={(e) => (e.target.style.backgroundColor = "rgba(0, 123, 255, 0.8)")}
+  >
+    Flood
+  </button>
+
+  {/* Year Buttons for Flood */}
+  {showFloodButtons && (
+    <div style={{ marginTop: "10px" }}>
+      {["2019", "2020", "2021"].map((year) => (
+        <button
+          key={year}
+          style={{
+            display: "block",
+            width: "100%",
+            backgroundColor: selectedYear === year ? "rgba(0, 86, 179, 0.9)" : "rgba(0, 123, 255, 0.8)", // Change color if selected
+            color: "#fff",
+            border: "none",
+            padding: "10px",
+            marginBottom: "10px",
+            borderRadius: "8px",
+            cursor: "pointer",
+            transition: "background-color 0.2s",
+          }}
+          onClick={() => handleYearButtonClick(year)}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(0, 86, 179, 0.8)")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = selectedYear === year ? "rgba(0, 86, 179, 0.9)" : "rgba(0, 123, 255, 0.8)")}
+        >
+          {year}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
+    
+    </div>
+
+
+
+
+
+       {/*Button done */}
+
+             {/* Button to toggle flood-prone areas */}
       <button
         className={styles.toggleButton}
         onClick={() => setShowFlood(!showFlood)}
       >
         {showFlood ? "Predict Flood Areas" : "Show Flood Areas"}
       </button>
+
+
+
+  </div>
 
 
       <MapContainer
@@ -781,12 +807,11 @@ export default function MapCoordinates() {
           {/* Overlay layers */}
 
           {/* **NEW:** Overlay for the GeoTIFF layer */}
-          {geoRasterLayer && (
-            <Overlay checked name="Inundation Layer">
-              {/* Use the GeoTIFF layer as an overlay */}
-              <GeoTIFFLayer layer={geoRasterLayer} />
-            </Overlay>
-          )}
+          {geoRasterLayers.map((item) => (
+  <Overlay key={item.year} checked name={`${item.year} Layer`}>
+    <GeoTIFFLayer layer={item.layer} />
+  </Overlay>
+))}
 
           {/* Render borders if data is available */}
           {borders && (
@@ -813,11 +838,11 @@ export default function MapCoordinates() {
             </Overlay>
           )}
           {/* **NEW:** GeoTIFF overlay layer */}
-          {geoRasterLayer && (
-            <Overlay checked name="2019 Inundation Layer">
-              <GeoTIFFLayer layer={geoRasterLayer} />
-            </Overlay>
-          )}
+          {geoRasterLayers.map((item) => (
+  <Overlay key={item.year} checked name={`${item.year} Layer`}>
+    <GeoTIFFLayer layer={item.layer} />
+  </Overlay>
+))}
         </LayersControl>
 
         {/* Fetch dataloops */}
@@ -898,6 +923,7 @@ export default function MapCoordinates() {
         )}
       </MapContainer>
     </div>
+    </div>
   );
 }
 
@@ -907,13 +933,13 @@ function GeoTIFFLayer({ layer }) {
 
   useEffect(() => {
     if (layer) {
-      layer.addTo(map);
+      layer.addTo(map); // Add the layer on top of the map
       console.log("GeoTIFF Layer added to map.");
     }
 
     return () => {
       if (layer) {
-        map.removeLayer(layer);
+        map.removeLayer(layer); // Clean up when layer is removed
         console.log("GeoTIFF Layer removed from map.");
       }
     };
