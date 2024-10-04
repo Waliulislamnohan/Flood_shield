@@ -58,6 +58,15 @@ const DashboardLayout = ({ children }) => {
               </div>
             </Link>
           </div>
+          <div className="mb-4 flex">
+            <Link href="/pages/adminpanel">
+              <div className="flex items-center text-md font-semibold mb-2 cursor-pointer hover:text-blue-400">
+                <FaTable className="mr-2 inline-block mt-1" />
+                Admin panel
+              </div>
+            </Link>
+          </div>
+
           {/* <div className="mb-4 flex cursor-pointer hover:text-blue-400" {...getRootProps()}>
             <input {...getInputProps()} />
             <FaUpload className="mr-2 inline-block mt-1" />

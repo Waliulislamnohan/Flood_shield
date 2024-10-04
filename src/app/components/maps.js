@@ -765,17 +765,19 @@ export default function MapCoordinates() {
 
        {/*Button done */}
 
-             {/* Button to toggle flood-prone areas */}
-      <button
-        className={styles.toggleButton}
-        onClick={() => setShowFlood(!showFlood)}
-      >
-        {showFlood ? "Predict Flood Areas" : "Show Flood Areas"}
-      </button>
+   
+      
 
 
 
   </div>
+  
+            {/* Button to toggle flood-prone areas */}
+            <button  className={styles.toggleButton}
+        onClick={() => setShowFlood(!showFlood)}
+      >
+        {showFlood ? "Predict Flood Areas" : "Show Flood Areas"}
+      </button>
 
 
       <MapContainer
