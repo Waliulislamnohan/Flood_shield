@@ -1,81 +1,63 @@
-import { FaMap, FaTable, FaUpload } from "react-icons/fa";
+// components/DashboardLayout.js
+
+import { FaMap, FaTable, FaBars, FaTimes } from "react-icons/fa";
 import Navbar from "./Navbar";
 import Link from 'next/link';
 import { useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import shp from 'shpjs'; // Import the shpjs library
 
 const DashboardLayout = ({ children }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const [uploadedGeoJSON, setUploadedGeoJSON] = useState(null);
-
-  const onDrop = async (acceptedFiles) => {
-    // Process upload shapefile and convert to GeoJSON
-    const shapefile = acceptedFiles[0];
-
-    // Read the shapefile using shpjs library
-    const geojson = await shp(shapefile);
-
-    // Set the GeoJSON data in state
-    setUploadedGeoJSON(geojson);
-
-    // You can now use the geojson data for further processing or visualization
-    console.log("Uploaded GeoJSON:", geojson);
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
   };
-
-  const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
     <div className="w-full h-screen flex flex-col">
       <Navbar />
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className="flex-[22%] p-5 bg-gray-200">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-2">Dashboard</h2>
+        <aside
+          className={`bg-gray-200 transition-all duration-300 ${
+            isCollapsed ? 'w-16' : 'w-64'
+          }`}
+        >
+          <div className="flex items-center justify-between p-4">
+            {!isCollapsed && <h2 className="text-lg font-semibold">Dashboard</h2>}
+            <button onClick={toggleSidebar} className="focus:outline-none">
+              {isCollapsed ? <FaBars /> : <FaTimes />}
+            </button>
           </div>
-          <div className="mb-4 flex">
+          <nav className="mt-4">
             <Link href="/">
-              <div className="flex items-center text-md font-semibold mb-2 cursor-pointer hover:text-blue-400">
-                <FaMap className="mr-2 inline-block mt-1" />
-                Maps
+              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
+                <FaMap className="mr-2" />
+                {!isCollapsed && 'Maps'}
               </div>
             </Link>
-          </div>
-          <div className="mb-4 flex">
             <Link href="/pages/tables">
-              <div className="flex items-center text-md font-semibold mb-2 cursor-pointer hover:text-blue-400">
-                <FaTable className="mr-2 inline-block mt-1" />
-                Table
+              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
+                <FaTable className="mr-2" />
+                {!isCollapsed && 'Table'}
               </div>
             </Link>
-          </div>
-          <div className="mb-4 flex">
             <Link href="/pages/forecast-map">
-              <div className="flex items-center text-md font-semibold mb-2 cursor-pointer hover:text-blue-400">
-                <FaTable className="mr-2 inline-block mt-1" />
-                Forcast Map 
+              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
+                <FaTable className="mr-2" />
+                {!isCollapsed && 'Forecast Map'}
               </div>
             </Link>
-          </div>
-          <div className="mb-4 flex">
             <Link href="/pages/adminpanel">
-              <div className="flex items-center text-md font-semibold mb-2 cursor-pointer hover:text-blue-400">
-                <FaTable className="mr-2 inline-block mt-1" />
-                Admin panel
+              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
+                <FaTable className="mr-2" />
+                {!isCollapsed && 'Admin Panel'}
               </div>
             </Link>
-          </div>
-
-          {/* <div className="mb-4 flex cursor-pointer hover:text-blue-400" {...getRootProps()}>
-            <input {...getInputProps()} />
-            <FaUpload className="mr-2 inline-block mt-1" />
-            <h2 className="text-md font-semibold mb-2">Upload Shapefile</h2>
-          </div> */}
+          </nav>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-[78%] p-4 bg-gray-100 overflow-auto">{children}</main>
+        <main className="flex-1 p-4 bg-gray-100 overflow-auto">{children}</main>
       </div>
     </div>
   );

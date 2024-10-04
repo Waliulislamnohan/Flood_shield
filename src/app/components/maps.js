@@ -615,6 +615,7 @@ export default function MapCoordinates() {
 
 
   return (
+    
     <div className="flow-root">
 <div style={{ position: "relative", height: "100vh", width: "100%" }}>
   <div style={{ position: "absolute", top: 10, right: 10, zIndex: 1000 }}>
@@ -647,6 +648,10 @@ export default function MapCoordinates() {
         ))}
       </ul>
     )}
+
+
+
+
 
 </div>
 
@@ -771,7 +776,7 @@ export default function MapCoordinates() {
 
 
   </div>
-  
+
             {/* Button to toggle flood-prone areas */}
             <button  className={styles.toggleButton}
         onClick={() => setShowFlood(!showFlood)}
