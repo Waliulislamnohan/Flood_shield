@@ -6,13 +6,15 @@
     left: 10px;
     z-index: 1000;
     padding: 10px 20px;
-    background-color: #fff;
+    background-color: #1118d0;
     border: 2px solid #000;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     transition: background-color 0.3s ease;
+    color: white;
+    font-weight: bold;
   }
   
   .toggleButton:hover {

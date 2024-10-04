@@ -19,7 +19,7 @@ export default function Navbar() {
     <div className="flex  justify-between  ">
       <div className="flex-[22%] flex  bg-slate-800 text-white text-sm p-3 shadow-lg text-center">
       <div className="items-center self-center  ">
-        Land Cover  <br /> Google Earth Engine
+FloodShield
       </div>
       </div>
       <div className="flex-[78%] border-b justify-end text-end p-5 shadow-md ">
