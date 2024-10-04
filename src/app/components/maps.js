@@ -612,7 +612,10 @@ export default function MapCoordinates() {
       document.head.appendChild(style);
     }) 
 
-
+    const mapId = 'ABCDEF1234567890';
+    const token = '1234567890abcdef';
+  
+    const tileUrl = `https://earthengine.googleapis.com/map/${mapId}/{z}/{x}/{y}?token=${token}`;
 
   return (
     
@@ -791,12 +794,7 @@ export default function MapCoordinates() {
         style={{ height: "100%", width: "100%" }}
       >
         <LayersControl position="topright">
-          <BaseLayer checked name="Google Earth Engine">
-            <TileLayer
-              url="https://earthengine.googleapis.com/map/projects/ee-ramadhan/assets/PL_KLHK_Raster_v1/KLHK_PL_2021_raster_v1/{z}/{x}/{y}"
-              attribution="&copy; Google Earth Engine"
-            />
-          </BaseLayer>
+
           <BaseLayer checked name="Satellite - Google">
             <TileLayer
               url="https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
@@ -862,16 +860,25 @@ export default function MapCoordinates() {
             Object.values(recentWaterLevels[station.id])[0];
 
           // Check if Recent Water Level is greater than Danger Level
-          const isAboveDangerLevel =
-            recentWaterLevel &&
-            parseFloat(recentWaterLevel) > parseFloat(station.dangerlevel);
-
-          // Set the icon based on the comparison
-          const iconUrl = isAboveDangerLevel ? "/gps.png" : "/placeholder.png";
-
+          const isAboveDangerLevel = 
+  recentWaterLevel && parseFloat(recentWaterLevel) > parseFloat(station.dangerlevel); 
+ 
+// Determine whether recent water level + 1 is still less than danger level 
+const isWarningLevel = 
+  recentWaterLevel && parseFloat(recentWaterLevel) + 0.5 > parseFloat(station.dangerlevel); 
+ 
+// Set the icon based on the comparison 
+let iconUrl; 
+if (isAboveDangerLevel) { 
+  iconUrl = "/gps.png"; // If recent water level is above the danger level 
+} else if (isWarningLevel) { 
+  iconUrl = "/warning.png"; // If recent water level + 1 is still less than the danger level 
+} else { 
+  iconUrl = "/placeholder.png"; // Default icon if none of the conditions are met 
+}
           const customIcon = new L.Icon({
             iconUrl, // Dynamically set the icon URL
-            iconSize: [30, 30], // Size of the marker icon
+            iconSize: [25, 25], // Size of the marker icon
             iconAnchor: [17, 55], // Anchor point for the marker
             popupAnchor: [1, -45], // Popup position relative to the marker
           });

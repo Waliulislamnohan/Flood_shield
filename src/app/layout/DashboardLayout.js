@@ -1,9 +1,9 @@
-// components/DashboardLayout.js
-
-import { FaMap, FaTable, FaBars, FaTimes } from "react-icons/fa";
+import { FaMap, FaTable, FaUpload ,FaBars, FaTimes} from "react-icons/fa";
 import Navbar from "./Navbar";
 import Link from 'next/link';
 import { useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import shp from 'shpjs'; // Import the shpjs library
 
 const DashboardLayout = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -11,6 +11,23 @@ const DashboardLayout = ({ children }) => {
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+  const [uploadedGeoJSON, setUploadedGeoJSON] = useState(null);
+
+  const onDrop = async (acceptedFiles) => {
+    // Process upload shapefile and convert to GeoJSON
+    const shapefile = acceptedFiles[0];
+
+    // Read the shapefile using shpjs library
+    const geojson = await shp(shapefile);
+
+    // Set the GeoJSON data in state
+    setUploadedGeoJSON(geojson);
+
+    // You can now use the geojson data for further processing or visualization
+    console.log("Uploaded GeoJSON:", geojson);
+  };
+
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
     <div className="w-full h-screen flex flex-col">
@@ -41,12 +58,15 @@ const DashboardLayout = ({ children }) => {
                 {!isCollapsed && 'Table'}
               </div>
             </Link>
-            <Link href="/pages/forecast-map">
-              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
+
+            <Link href="/pages/prediction">
+              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4 ">
                 <FaTable className="mr-2" />
-                {!isCollapsed && 'Forecast Map'}
+                {!isCollapsed && 'Prediction'}
+
               </div>
             </Link>
+
             <Link href="/pages/adminpanel">
               <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
                 <FaTable className="mr-2" />
