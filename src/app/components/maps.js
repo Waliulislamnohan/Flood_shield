@@ -517,15 +517,74 @@ export default function MapCoordinates() {
     return dangerStatus;
   }, [stations, recentWaterLevels]);
 
+
+    // Warning level area by arafat
+    const districtWarningStatus = useMemo(() => {
+      const warningStatus = {};
+    
+      // Create a map of districts to stations
+      const districtStations = {};
+      stations.forEach((station) => {
+        if (station.district) {
+          if (!districtStations[station.district]) {
+            districtStations[station.district] = [];
+          }
+          districtStations[station.district].push(station);
+        }
+      });
+    
+      // For each district, check if any station is above danger level
+      for (const district in districtStations) {
+        const stationsInDistrict = districtStations[district];
+        let isDistrictInWarning = false;
+    
+        for (const station of stationsInDistrict) {
+          const recentWaterLevel =
+            recentWaterLevels[station.id] &&
+            Object.values(recentWaterLevels[station.id])[0];
+    
+          const isAboveDangerLevel =
+            recentWaterLevel &&
+            parseFloat(recentWaterLevel) > parseFloat(station.dangerlevel);
+
+            // Warning level by arafat
+            const isWarningLevel = 
+            recentWaterLevel && parseFloat(recentWaterLevel) + 0.5 > parseFloat(station.dangerlevel); 
+    
+          if (isWarningLevel) {
+            isDistrictInWarning = true;
+            break; // No need to check other stations in the district
+          }
+        }
+    
+        warningStatus[district] = isDistrictInWarning;
+      }
+    
+      return warningStatus;
+    }, [stations, recentWaterLevels]);
+
     // Styling for flood-prone areas
     const floodStyle = (feature) => {
       const districtName = feature.properties.ADM2_EN;
       const isDistrictInDanger = districtDangerStatus[districtName];
-    
+     const isWarningDistrict = districtWarningStatus[districtName];
+     if(isDistrictInDanger){
       return {
-        color: isDistrictInDanger ? "#FF0000" : "#00FF00", // Red if in danger, green otherwise
+color: 'red'
+        }
+     }else if(isWarningDistrict) {
+return{
+  color: 'yellow',
+  weight: 2,
+  opacity: 0.9,
+  fillOpacity: 0.4,
+}
+     }
+      return {
+
+        color: isDistrictInDanger ? "red" : "#00FF00", // Red if in danger, green otherwise
         weight: 2,
-        opacity: 0.8,
+        opacity: 0.9,
         fillOpacity: 0.4,
       };
     };
