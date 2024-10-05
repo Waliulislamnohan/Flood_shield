@@ -585,38 +585,33 @@ export default function MapCoordinates() {
     setShowDropdown(false); // Hide the dropdown after selection
   };
 
-  useEffect(() => {
-    window.Tawk_API = window.Tawk_API || {};
-    window.Tawk_LoadStart = new Date();
+    // Add Tawk.to script and change widget position
+    useEffect(() => {
+      window.Tawk_API = window.Tawk_API || {};
+      window.Tawk_LoadStart = new Date();
   
-    const s1 = document.createElement("script");
-    s1.async = true;
-    s1.src = "https://embed.tawk.to/66ff799c37379df10df1958b/1i9av63aa";
-    s1.charset = "UTF-8";
-    s1.setAttribute("crossorigin", "*");
-    document.body.appendChild(s1);
+      const s1 = document.createElement("script");
+      s1.async = true;
+      s1.src = "https://embed.tawk.to/66ff799c37379df10df1958b/1i9av63aa";
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      document.body.appendChild(s1);
   
-    // Inject custom CSS to change the widget position
-    const style = document.createElement("style");
-    style.innerHTML = `
-      .tawk-min-container {
-        left: 20px !important;
-        right: auto !important;
-      }
-      .tawk-chat-container {
-        left: 20px !important;
-        right: auto !important;
-      }
-    `;
-    document.head.appendChild(style);
-  
-    // Cleanup on unmount
-    return () => {
-      document.body.removeChild(s1);
-      document.head.removeChild(style);
-    };
-  }, []); // Added empty dependency array
-  
+      // Inject custom CSS to change the widget position
+      const style = document.createElement("style");
+      style.innerHTML = `
+        .tawk-min-container {
+          left: 20px !important;
+          right: auto !important;
+        }
+        .tawk-chat-container {
+          left: 20px !important;
+          right: auto !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }) 
+
    
 
   return (
