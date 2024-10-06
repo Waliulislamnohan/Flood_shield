@@ -13,6 +13,7 @@ import { usePathname } from "next/navigation"; // Import usePathname for App Rou
 const DashboardLayout = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [uploadedGeoJSON, setUploadedGeoJSON] = useState(null);
+  const [showMapTutorial, setShowMapTutorial] = useState(false); // State for tutorial message
   const pathname = usePathname(); // Get the current pathname
 
   // Function to toggle the sidebar's collapsed state
@@ -61,6 +62,15 @@ const DashboardLayout = ({ children }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Effect to show tutorial when on "Maps" page
+  useEffect(() => {
+    if (pathname === "/") {
+      setShowMapTutorial(true);
+    } else {
+      setShowMapTutorial(false);
+    }
+  }, [pathname]);
+
   // Navigation Links Data
   const navLinks = [
     { name: "Maps", href: "/", icon: <FaMap /> },
@@ -79,8 +89,9 @@ const DashboardLayout = ({ children }) => {
         <aside
           className={`bg-white bg-opacity-20 backdrop-blur-lg transition-all duration-300 ${
             isCollapsed ? "w-16" : "w-64"
-          } shadow-lg border-r border-gray-200`}
+          } shadow-lg border-r border-gray-200 relative`}
         >
+          {/* Header Section */}
           <div className="flex items-center justify-between p-4">
             {/* Dashboard Title */}
             {!isCollapsed && (
@@ -95,14 +106,16 @@ const DashboardLayout = ({ children }) => {
               {isCollapsed ? <FaBars size={20} /> : <FaTimes size={20} />}
             </button>
           </div>
-          <nav className="mt-6">
+
+          {/* Navigation Links */}
+          <nav className="mt-4">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`flex items-center px-4 py-3 text-gray-700 hover:bg-gray-300 transition-colors duration-200 ${
+                  className={`flex items-center px-4 py-2 text-gray-700 hover:bg-gray-300 transition-colors duration-200 ${
                     isActive ? "bg-gray-300 font-semibold" : ""
                   }`}
                 >
@@ -114,6 +127,15 @@ const DashboardLayout = ({ children }) => {
               );
             })}
           </nav>
+
+          {/* Tutorial Message for Maps */}
+          {showMapTutorial && !isCollapsed && (
+            <div className="mt-6 mx-4 bg-white bg-opacity-15 backdrop-blur-sm border border-white border-opacity-10 rounded-lg p-3 shadow-md">
+              <p className="text-sm text-gray-800">
+                🌟 Welcome to the Maps Section! Explore flood cover visualizations and interact with the map to gain valuable insights.
+              </p>
+            </div>
+          )}
         </aside>
 
         {/* Main Content */}
