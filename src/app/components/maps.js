@@ -157,54 +157,6 @@ export default function MapCoordinates() {
 
   ///////////////////////////////////////////////////
 
-  // **NEW:** Fetch and process the local GeoTIFF data (2019.tif)
-  // useEffect(() => {
-  //   const fetchGeoTIFF = async () => {
-  //     try {
-  //       console.log("Fetching GeoTIFF...");
-  //       // Fetch the local GeoTIFF file from the public folder
-  //       const response = await axios.get("/2019.tif", {
-  //         responseType: "arraybuffer", // Important for binary data
-  //       });
-
-  //       console.log("GeoTIFF fetched successfully.");
-
-  //       // Parse the GeoTIFF using georaster
-  //       const tiff = await georaster(response.data);
-
-  //       console.log("GeoTIFF parsed successfully:", tiff);
-  //       console.log("GeoTIFF bounds:", tiff.bounds); // **NEW** Check the bounds of the GeoTIFF
-  //       console.log("GeoTIFF projection:", tiff.projection); // **NEW** Check the projection of the GeoTIFF
-
-  //       // Create a GeoRasterLayer to display on the map
-  //       const layer = new GeoRasterLayer({
-  //         georaster: tiff,
-  //         opacity: 0.7, // Adjust opacity for better visibility
-  //         resolution: 256, // Adjust for performance vs. quality
-  //         pixelValuesToColorFn: (values) => {
-  //           if (values[0] > 0) {
-  //             // Display for non-zero pixel values
-  //             return "rgba(0, 0, 255, 0.5)"; // Blue color with transparency
-  //           } else {
-  //             return null; // No color for zero or other values
-  //           }
-  //         },
-  //       });
-
-  //       setGeoRasterLayer(layer);
-  //       console.log("GeoTIFF layer created successfully.");
-  //       // Set the layer to the state
-  //     } catch (error) {
-  //       console.error("Error fetching or parsing GeoTIFF:", error);
-  //     }
-  //   };
-
-  //   fetchGeoTIFF();
-  // }, []);
-
-  // Function to fetch and set GeoTIFF layer based on year
-   // Function to fetch and set GeoTIFF layer based on year
-  // Function to fetch and set GeoTIFF layer based on year and color
     // Function to fetch and add a GeoTIFF layer
     const loadGeoTIFFLayer = async (year, filename, color) => {
       try {
@@ -251,27 +203,6 @@ export default function MapCoordinates() {
       }
     };
 
-  // Function to handle year button click with corresponding color
-  // Function to handle year button click with corresponding color
-  // const handleYearButtonClick = (year) => {
-  //   if (year === "2019") {
-  //     loadGeoTIFFLayer("2019", "rgba(128, 0, 128, 0.7)"); // Purple with lower opacity
-  //   } else if (year === "2020") {
-  //     loadGeoTIFFLayer("2020", "rgba(255, 165, 0, 0.7)"); // Orange with lower opacity
-  //   } else if (year === "2021") {
-  //     loadGeoTIFFLayer("2021", "rgba(0, 128, 128, 0.7)"); // Teal with lower opacity
-  //   }
-  // };
-
-  // const handleYearButtonClick1 = (year) => {
-  //   if (year === "2019") {
-  //     loadGeoTIFFLayer("Population_2019", "rgba(128, 0, 128, 0.7)"); // Purple with lower opacity
-  //   } else if (year === "2020") {
-  //     loadGeoTIFFLayer("Population_2020", "rgba(255, 165, 0, 0.7)"); // Orange with lower opacity
-  //   } else if (year === "2021") {
-  //     loadGeoTIFFLayer("2021", "rgba(0, 128, 128, 0.7)"); // Teal with lower opacity
-  //   }
-  // };
 
   const handleYearButtonClick = (year) => {
     setSelectedYear(year); // Set selected flood year
@@ -309,149 +240,170 @@ export default function MapCoordinates() {
     };
   
 
-  // Fetch the borders GeoJSON data
-  useEffect(() => {
-    const fetchBorders = async () => {
-
-      const cacheKey = "bordersData";
-      const cachedData = localStorage.getItem(cacheKey);
-
-      if (cachedData) {
-        const parsedData = JSON.parse(cachedData);
-        if (isCacheValid(parsedData.timestamp)) {
-          setBorders(parsedData.data);
-          return;
-        }
-      }
-
-      try {
-        const response = await fetch(
-          "https://ffwc.rimes.int/assets/geojson/BD_Bndry_without_island.json",
-          { mode: "cors" }
-        );
-        const data = await response.json();
-        setBorders(data);
-
-               // Cache the data
-               localStorage.setItem(
-                cacheKey,
-                JSON.stringify({ data, timestamp: Date.now() })
-              );
-
-      } catch (error) {
-        console.error("Error fetching borders GeoJSON data:", error);
+    useEffect(() => {
+      const fetchBorders = async () => {
+        const cacheKey = "bordersData";
+        const cachedData = localStorage.getItem(cacheKey);
+    
+        // Function to validate cache timestamp
+        const isCacheValid = (timestamp) => {
+          const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+          return Date.now() - timestamp < CACHE_DURATION;
+        };
+    
+        // Check if cached data exists and is valid
         if (cachedData) {
-          setBorders(JSON.parse(cachedData).data);
+          const parsedData = JSON.parse(cachedData);
+          if (isCacheValid(parsedData.timestamp)) {
+            setBorders(parsedData.data);
+            return; // Exit early if valid cached data is found
+          }
         }
-      }
-    };
-    fetchBorders();
-  }, []);
-
+    
+        try {
+          // Fetch data from the local JSON file in public/assets/geojson/
+          const response = await fetch("/assets/geojson/BD_Bndry"); // Relative path to public directory
+    
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+    
+          const data = await response.json();
+          setBorders(data);
+    
+          // Cache the fetched data with the current timestamp
+          localStorage.setItem(
+            cacheKey,
+            JSON.stringify({ data, timestamp: Date.now() })
+          );
+        } catch (error) {
+          console.error("Error loading borders GeoJSON data:", error);
+    
+          if (cachedData) {
+            const parsedData = JSON.parse(cachedData);
+            setBorders(parsedData.data);
+          } else {
+            // Optional: Handle cases where no data is available
+            // For example, set a default state or notify the user
+            console.warn("No cached data available for borders GeoJSON.");
+            setBorders([]); // Set to an empty array or a default value as needed
+          }
+        }
+      };
+      fetchBorders();
+    }, []);
+    
   // Fetch the rivers GeoJSON data
   useEffect(() => {
     const fetchRivers = async () => {
       const cacheKey = "riversData";
       const cachedData = localStorage.getItem(cacheKey);
-
+  
+      // Function to validate cache timestamp
+      const isCacheValid = (timestamp) => {
+        const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+        return Date.now() - timestamp < CACHE_DURATION;
+      };
+  
+      // Check if cached data exists and is valid
       if (cachedData) {
         const parsedData = JSON.parse(cachedData);
         if (isCacheValid(parsedData.timestamp)) {
           setRivers(parsedData.data);
-          return;
+          return; // Exit early if valid cached data is found
         }
       }
+  
       try {
-        const response = await fetch(
-          "https://ffwc.rimes.int/assets/geojson/rivers-level-2.json",
-          { mode: "cors" }
-        );
+        // Fetch data from the local JSON file in public/assets/geojson/
+        const response = await fetch("/assets/geojson/rivers-level-2.json"); // Relative path to public directory
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
         const data = await response.json();
         setRivers(data);
-                // Cache the data
-                localStorage.setItem(
-                  cacheKey,
-                  JSON.stringify({ data, timestamp: Date.now() })
-                );
+  
+        // Cache the fetched data with the current timestamp
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({ data, timestamp: Date.now() })
+        );
       } catch (error) {
-        console.error("Error fetching rivers GeoJSON data:", error);
+        console.error("Error loading rivers GeoJSON data:", error);
+  
         if (cachedData) {
-          setRivers(JSON.parse(cachedData).data);
+          const parsedData = JSON.parse(cachedData);
+          setRivers(parsedData.data);
+        } else {
+          // Optional: Handle cases where no data is available
+          // For example, set a default state or notify the user
+          console.warn("No cached data available for rivers GeoJSON.");
+          setRivers([]); // Set to an empty array or a default value as needed
         }
       }
     };
     fetchRivers();
   }, []);
+  
 
-  // Fetch the flood-prone areas GeoJSON data
   useEffect(() => {
     const fetchFloodData = async () => {
       const cacheKey = "floodData";
       const cachedData = localStorage.getItem(cacheKey);
-
+  
+      // Function to validate cache timestamp
+      const isCacheValid = (timestamp) => {
+        const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+        return Date.now() - timestamp < CACHE_DURATION;
+      };
+  
+      // Check if cached data exists and is valid
       if (cachedData) {
         const parsedData = JSON.parse(cachedData);
         if (isCacheValid(parsedData.timestamp)) {
           setFloodData(parsedData.data);
-          return;
+          return; // Exit if valid cached data is found
         }
       }
+  
       try {
-        const response = await fetch(
-          "https://ffwc.rimes.int/assets/geojson/bd_adm2.json",
-          { mode: "cors" }
-        );
+        // Fetch data from the local JSON file in public/assets/geojson/
+        const response = await fetch("/assets/geojson/bd_adm2.json"); // Relative path to public directory
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
         const data = await response.json();
         setFloodData(data);
-                // Cache the data
-                localStorage.setItem(
-                  cacheKey,
-                  JSON.stringify({ data, timestamp: Date.now() })
-                );
+  
+        // Cache the fetched data with the current timestamp
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({ data, timestamp: Date.now() })
+        );
       } catch (error) {
-        console.error("Error fetching flood-prone areas GeoJSON data:", error);
+        console.error("Error loading flood-prone areas GeoJSON data:", error);
+        
+        // Attempt to use cached data if available
         if (cachedData) {
-          setFloodData(JSON.parse(cachedData).data);
+          const parsedData = JSON.parse(cachedData);
+          setFloodData(parsedData.data);
+        } else {
+          // Optional: Handle cases where no data is available
+          // For example, set a default state or notify the user
+          console.warn("No cached data available for flood-prone areas.");
         }
       }
     };
     fetchFloodData();
   }, []);
+  
+  
 
-  //  // **NEW:** Fetch and process the GeoTIFF data
-  //  useEffect(() => {
-  //   const fetchGeoTIFF = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         "https://ffwc.rimes.int/assets/geotiff/inundation/inundation_2019_4326.tif",
-  //         {
-  //           responseType: "arraybuffer", // Important for binary data
-  //         }
-  //       );
-
-  //       const tiff = await georaster(response.data);
-  //       const layer = new GeoRasterLayer({
-  //         georaster: tiff,
-  //         opacity: 0.7,
-  //         resolution: 256, // Adjust for performance vs. quality
-  //         pixelValuesToColorFn: (values) => {
-  //           if (values[0] === 1) {
-  //             return "rgba(0, 0, 255, 0.5)"; // Blue color with transparency
-  //           } else {
-  //             return null; // No color for other values
-  //           }
-  //         },
-  //       });
-
-  //       setGeoRasterLayer(layer);
-  //     } catch (error) {
-  //       console.error("Error fetching GeoTIFF data:", error);
-  //     }
-  //   };
-
-  //   fetchGeoTIFF();
-  // }, []);
-
+  // 
   // Styling for borders
   const borderStyle = {
     color: "#FF0000", // Red color for borders
@@ -605,23 +557,7 @@ return{
       );
     }
 
-    // Optional hover effects
-    // layer.on({
-    //   mouseover: (e) => {
-    //     e.target.setStyle({
-    //       weight: 3,
-    //       color: "#FFFF00", // Highlight color
-    //       fillOpacity: 0.7,
-    //     });
-    //   },
-    //   mouseout: (e) => {
-    //     e.target.setStyle({
-    //       weight: 2,
-    //       color: "#FFA500",
-    //       fillOpacity: 0.4,
-    //     });
-    //   },
-    // });
+ 
   };
 
   /////////////////////////////////////////////////
