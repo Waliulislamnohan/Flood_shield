@@ -71,7 +71,9 @@ Our platform features an intuitive map of Bangladesh that displays real-time flo
 
 ## Data Transparency
 An admin panel allows researchers to upload and manage data, ensuring transparency and promoting trust in the information being shared.
-<img width="762" alt="AdminPanel" src="https://github.com/user-attachments/assets/4fea9d41-c990-4c31-ba9d-50f34975c1e5">
+<img width="770" alt="AdminPanel" src="https://github.com/user-attachments/assets/4fea9d41-c990-4c31-ba9d-50f34975c1e5">
 
-
+## AI Chatbot Interaction
+We integrated Artificial Intelligence into our project to enhance user interaction and data accessibility. Our AI-powered chatbot provides real-time communication with users, answering their questions about flood predictions and offering guidance on safety measures. This allows users to receive timely, personalized assistance, improving their understanding of the flood risks and empowering them to take proactive action.
+<img width="770" alt="ChatbotPlusMap" src="https://github.com/user-attachments/assets/1c49c96f-0267-4503-9392-c7e77d038150">
 
