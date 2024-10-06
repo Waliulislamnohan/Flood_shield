@@ -52,6 +52,8 @@ export default function MapCoordinates() {
   const [showYearButtons1, setShowYearButtons1] = useState(false);
   // State to track selected flood year
   const [selectedYear1, setSelectedYear1] = useState(null);
+  const [isClickedPopulation, setIsClickedPopulation] = useState([false, false, false]);
+  const [isClickedFlood, setIsClickedFlood] = useState([false, false, false]);
 
 
   const [geoData, setGeoData] = useState({
@@ -274,19 +276,41 @@ export default function MapCoordinates() {
   // };
 
   const handleYearButtonClick = (year) => {
-    setSelectedYear(year); // Set selected flood year
-    const filename = `${year}`; // Example naming convention
-    const color = year === "2019" ? "rgba(255, 0, 0, 0.7)" : "rgba(128, 0, 128, 0.7)"; // Different colors for different years
-    loadGeoTIFFLayer(year, filename, color);
+      if(isClickedFlood[parseInt(year)-2019] === false){
+      setSelectedYear(year); // Set selected flood year
+      const filename = `${year}`; // Example naming convention
+      const color = year === "2019" ? "rgba(255, 0, 0, 0.7)" : "rgba(128, 0, 128, 0.7)"; // Different colors for different years
+      loadGeoTIFFLayer(year, filename, color);
+
+      setIsClickedFlood((prevState) => {
+        const newState = [...prevState];
+        newState[parseInt(year)-2019] = true;
+        return newState;
+      });
+    }else{
+      console.log("Already Clicked");
+      // Remove the layer if already clicked (Undo the action)
+    }
   };
 
   // "rgba(255, 165, 0, 0.7)" : "rgba(128, 0, 128, 0.7)"
   
   const handleYearButtonClick1 = (year) => {
-    setSelectedYear1(year); // Set selected population year
-    const filename = `Population_${year}`; // Example naming convention
-    const color = "rgba(0, 128, 128, 0.7)"; // Teal for population
-    loadGeoTIFFLayer(year, filename, color);
+    if(isClickedPopulation[parseInt(year)-2019] === false){
+      console.log("Population Year Clicked: ", year, isClickedPopulation[parseInt(year)-2019]);
+      setSelectedYear1(year); // Set selected population year
+      const filename = `Population_${year}`; // Example naming convention
+      const color = "rgba(0, 128, 128, 0.7)"; // Teal for population
+      loadGeoTIFFLayer(year, filename, color);
+      setIsClickedPopulation((prevState) => {
+        const newState = [...prevState];
+        newState[parseInt(year)-2019] = true;
+        return newState;
+      });
+    }else{
+      console.log("Already Clicked");
+      // Remove the layer if already clicked (Undo the action)
+    }
   };
 
 
