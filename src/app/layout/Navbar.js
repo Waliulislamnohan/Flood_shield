@@ -26,7 +26,7 @@ FloodShield
         <div className="absolute right-7 ">
           <div className="cursor-pointer flex" onClick={handleAccountClick}>
             <FaUserCircle size={24} />
-            <div className="ml-2 text-sm mt-1">Sumaiya Islam</div>
+            <div className="ml-2 text-sm mt-1">User</div>
           </div>
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg">
