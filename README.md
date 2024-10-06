@@ -1,37 +1,49 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# FloodShield
+Bangladesh, as a downstream community, faces frequent and severe floods that impact thousands of lives every year. We at MonsoonFive are proud to present FloodShield, a tool designed to predict upcoming floods, provide real-time updates on rising water levels, and offer detailed flood maps. Our admin dashboard allows researchers to contribute flood forecasting data. FloodShield integrates satellite data from NASA's MODIS and Landsat, along with real-time information from the BWDB. The best part? All information from FloodShield is free and publicly available, empowering communities to act quickly and effectively.
 
-## Getting Started
+[See Video](https://drive.google.com/drive/folders/1JVqyAR8XK3m_PDUUbaEEH38yZK_kyzs0) ||
+[Live Website](https://drive.google.com/drive/folders/1JVqyAR8XK3m_PDUUbaEEH38yZK_kyzs0)
 
-First, run the development server:
+## Run This Project Locally
+
+Clone the project
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+  git clone https://github.com/Waliulislamnohan/Flood_shield
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Go to the project directory
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+  cd my-project
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Install dependencies
 
-## Learn More
+```bash
+  npm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+Start the server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+  npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+# Project Details
+FloodShield addresses the critical challenge of community mapping in flood-prone areas. By creating an innovative flood prediction and alert system, we harness NASA's open-source historical flood data to empower communities. Our platform visualizes real-time water levels across Bangladesh through an interactive map, highlighting recent, danger, and peak water levels from various stations. With the ability to predict floods up to 15 days in advance, FloodShield gives people the time they need to take action. The system also includes a chatbot for personalized flood predictions and an admin panel for researchers to upload data, promoting transparency and informed decision-making.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Project Features
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-# Flood_shield
+## Flood Prediction
+
+- Normal 
+- Wanring
+- Danger
+
+
+## Layer Section
+- Population Layer
+- Flood Layer
+
