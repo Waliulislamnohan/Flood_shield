@@ -1,83 +1,125 @@
-import { FaMap, FaTable, FaUpload ,FaBars, FaTimes} from "react-icons/fa";
+// components/DashboardLayout.js
+
+"use client";
+
+import { FaMap, FaTable, FaUpload, FaBars, FaTimes } from "react-icons/fa";
 import Navbar from "./Navbar";
-import Link from 'next/link';
-import { useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import shp from 'shpjs'; // Import the shpjs library
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useDropzone } from "react-dropzone";
+import shp from "shpjs"; // Import the shpjs library
+import { usePathname } from "next/navigation"; // Import usePathname for App Router
 
 const DashboardLayout = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [uploadedGeoJSON, setUploadedGeoJSON] = useState(null);
+  const pathname = usePathname(); // Get the current pathname
 
+  // Function to toggle the sidebar's collapsed state
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
-  const [uploadedGeoJSON, setUploadedGeoJSON] = useState(null);
 
+  // Function to handle file uploads and convert shapefiles to GeoJSON
   const onDrop = async (acceptedFiles) => {
-    // Process upload shapefile and convert to GeoJSON
+    // Process uploaded shapefile and convert to GeoJSON
     const shapefile = acceptedFiles[0];
 
-    // Read the shapefile using shpjs library
-    const geojson = await shp(shapefile);
+    try {
+      // Read the shapefile using shpjs library
+      const geojson = await shp(shapefile);
 
-    // Set the GeoJSON data in state
-    setUploadedGeoJSON(geojson);
+      // Set the GeoJSON data in state
+      setUploadedGeoJSON(geojson);
 
-    // You can now use the geojson data for further processing or visualization
-    console.log("Uploaded GeoJSON:", geojson);
+      // You can now use the geojson data for further processing or visualization
+      console.log("Uploaded GeoJSON:", geojson);
+    } catch (error) {
+      console.error("Error processing shapefile:", error);
+    }
   };
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
+  // Effect to set the sidebar's initial state based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsCollapsed(true);
+      } else {
+        setIsCollapsed(false);
+      }
+    };
+
+    // Set the initial state
+    handleResize();
+
+    // Listen for window resize events to auto-collapse/expand
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup the event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Navigation Links Data
+  const navLinks = [
+    { name: "Maps", href: "/", icon: <FaMap /> },
+    { name: "Table", href: "/pages/tables", icon: <FaTable /> },
+    { name: "Prediction", href: "/pages/prediction", icon: <FaUpload /> },
+    { name: "Admin Panel", href: "/pages/adminpanel", icon: <FaTable /> },
+  ];
+
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="flex flex-col w-full h-screen bg-gradient-to-r from-gray-100 to-gray-200">
+      {/* Navbar */}
       <Navbar />
+
       <div className="flex flex-1">
         {/* Sidebar */}
         <aside
-          className={`bg-gray-200 transition-all duration-300 ${
-            isCollapsed ? 'w-16' : 'w-64'
-          }`}
+          className={`bg-white bg-opacity-20 backdrop-blur-lg transition-all duration-300 ${
+            isCollapsed ? "w-16" : "w-64"
+          } shadow-lg border-r border-gray-200`}
         >
           <div className="flex items-center justify-between p-4">
-            {!isCollapsed && <h2 className="text-lg font-semibold">Dashboard</h2>}
-            <button onClick={toggleSidebar} className="focus:outline-none">
-              {isCollapsed ? <FaBars /> : <FaTimes />}
+            {/* Dashboard Title */}
+            {!isCollapsed && (
+              <h2 className="text-lg font-semibold text-gray-800">Dashboard</h2>
+            )}
+            {/* Toggle Button */}
+            <button
+              onClick={toggleSidebar}
+              className="focus:outline-none text-gray-800"
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCollapsed ? <FaBars size={20} /> : <FaTimes size={20} />}
             </button>
           </div>
-          <nav className="mt-4">
-            <Link href="/">
-              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
-                <FaMap className="mr-2" />
-                {!isCollapsed && 'Maps'}
-              </div>
-            </Link>
-            <Link href="/pages/tables">
-              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
-                <FaTable className="mr-2" />
-                {!isCollapsed && 'Table'}
-              </div>
-            </Link>
-
-            <Link href="/pages/prediction">
-              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4 ">
-                <FaTable className="mr-2" />
-                {!isCollapsed && 'Prediction'}
-
-              </div>
-            </Link>
-
-            <Link href="/pages/adminpanel">
-              <div className="flex items-center text-md font-semibold mb-4 cursor-pointer hover:text-blue-400 px-4">
-                <FaTable className="mr-2" />
-                {!isCollapsed && 'Admin Panel'}
-              </div>
-            </Link>
+          <nav className="mt-6">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`flex items-center px-4 py-3 text-gray-700 hover:bg-gray-300 transition-colors duration-200 ${
+                    isActive ? "bg-gray-300 font-semibold" : ""
+                  }`}
+                >
+                  <span className="text-lg">{link.icon}</span>
+                  {!isCollapsed && (
+                    <span className="ml-3 text-md">{link.name}</span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 bg-gray-100 overflow-auto">{children}</main>
+        <main className="flex-1 p-6 overflow-auto bg-white bg-opacity-20 backdrop-blur-md border-l border-gray-200 rounded-lg shadow-inner">
+          {children}
+        </main>
       </div>
     </div>
   );

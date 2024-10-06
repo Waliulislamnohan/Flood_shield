@@ -15,9 +15,11 @@ const Dashboard = () => {
   );
   return (
     <DashboardLayout>
-      <div className="text-center p-2 font-semibold text-2xl  text-gray-800 shadow-sm shadow-gray-400 mx-auto  max-w-[fit-content] mb-2  rounded-sm bg-gray-100">
-        Flood cover Visualization 
-      </div>
+
+<div className="text-center px-4 py-2 font-semibold text-2xl text-gray-800 shadow-lg shadow-gray-400 mx-auto max-w-md mb-4 rounded-lg bg-white bg-opacity-30 backdrop-blur-md border border-white border-opacity-20">
+  Flood Cover Visualization
+</div>
+
       <MapCoordinates/>
       {/* <Tables /> */}
     </DashboardLayout>

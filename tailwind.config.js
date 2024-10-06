@@ -7,11 +7,19 @@ module.exports = {
   ],
   theme: {
     extend: {
+      backdropFilter: { // Enable backdrop-filter utilities
+        'none': 'none',
+        'blur': 'blur(20px)',
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
+    },
+  },  variants: {
+    extend: {
+      backdropFilter: ['responsive'], // Enable responsive variants
     },
   },
   plugins: [],
