@@ -37,15 +37,23 @@ Start the server
 
 
 # Project Details
+### What is it?
 FloodShield addresses the critical challenge of community mapping in flood-prone areas. By creating an innovative flood prediction and alert system, we harness NASA's open-source historical flood data to empower communities. Our platform visualizes real-time water levels across Bangladesh through an interactive map, highlighting recent, danger, and peak water levels from various stations. With the ability to predict floods up to 15 days in advance, FloodShield gives people the time they need to take action. The system also includes a chatbot for personalized flood predictions and an admin panel for researchers to upload data, promoting transparency and informed decision-making.
+
+### Why this is relevant or important?
+FloodShield tackles the urgent global challenge of rising flood frequency and severity driven by climate change. With millions of lives disrupted annually, our project provides a critical solution to enhance community resilience and preparedness. By leveraging NASA's open-source historical datasets, FloodShield empowers communities to anticipate flooding events and take preventive measures, ultimately saving lives and reducing economic losses.
+<br>
+<img width="688" alt="Screenshot 2024-10-05 113914" src="https://github.com/user-attachments/assets/84cdd5ae-75ab-45c8-9bc0-9038b08fabd9">
+
+<br>
 
 # Project Features
 
 ## Realtime Flood Prediction
 Our platform features an intuitive map of Bangladesh that displays real-time flood data from various water stations. Users can easily visualize recent, danger, and highest water levels, making it simple to assess flood risks in their area.
-- Normal 
-- Wanring
-- Danger
+- Green Represents Safe
+- Yellow Represents Wanring
+- Red Represents Danger
 <img width="700" alt="image" src="https://github.com/user-attachments/assets/387d10e1-b351-4fb8-a868-97f458c2bb51">
 
 ## Layer Section
