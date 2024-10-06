@@ -1,6 +1,10 @@
 # FloodShield
 Bangladesh, as a downstream community, faces frequent and severe floods that impact thousands of lives every year. We at MonsoonFive are proud to present FloodShield, a tool designed to predict upcoming floods, provide real-time updates on rising water levels, and offer detailed flood maps. Our admin dashboard allows researchers to contribute flood forecasting data. FloodShield integrates satellite data from NASA's MODIS and Landsat, along with real-time information from the BWDB. The best part? All information from FloodShield is free and publicly available, empowering communities to act quickly and effectively.
 
+
+
+<img width="950" alt="image" src="https://github.com/user-attachments/assets/147dcc73-492f-45bd-b374-25ef41b08bbe">
+
 [See Video](https://drive.google.com/drive/folders/1JVqyAR8XK3m_PDUUbaEEH38yZK_kyzs0) ||
 [Live Website](https://drive.google.com/drive/folders/1JVqyAR8XK3m_PDUUbaEEH38yZK_kyzs0)
 
@@ -36,12 +40,12 @@ FloodShield addresses the critical challenge of community mapping in flood-prone
 
 # Project Features
 
-## Flood Prediction
+## Realtime Flood Prediction
 
 - Normal 
 - Wanring
 - Danger
-
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/387d10e1-b351-4fb8-a868-97f458c2bb51">
 
 ## Layer Section
 - Population Layer
