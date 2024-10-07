@@ -24,7 +24,7 @@ export default function Navbar() {
       {/* Left Side: Logo and Brand Name */}
       <div className="flex items-center">
         <Image
-          src="/floodshield.png" // Path to your logo
+          src="/logo.png" // Path to your logo
           alt="FloodShield Logo"
           width={40} // Adjust size as needed
           height={40}
