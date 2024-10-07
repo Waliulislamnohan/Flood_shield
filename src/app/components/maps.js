@@ -651,118 +651,89 @@ return{
 </div>
 
     {/* Historical Peak Button and Sub-buttons (Flood and Population) */}
-    <div className="flex gap-2 ">
-    <div className="mt-20 bg-gray-100 bg-opacity-30 backdrop-blur-md rounded-lg p-4 shadow-lg float-left">
-  {/* Population Button */}
-  <button
-    style={{
-      display: "block",
-      width: "100%",
-      backgroundColor: "rgba(0, 123, 255, 0.8)", // Transparent blue background
-      color: "#fff",
-      border: "none",
-      padding: "10px 20px",
-      marginBottom: "10px",
-      borderRadius: "8px",
-      cursor: "pointer",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      transition: "background-color 0.2s",
-    }}
-    onClick={() => setShowPopulationButtons(!showPopulationButtons)}
-    onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(0, 86, 179, 0.8)")}
-    onMouseLeave={(e) => (e.target.style.backgroundColor = "rgba(0, 123, 255, 0.8)")}
-  >
-    Population
-  </button>
-
-  {/* Year Buttons for Population */}
-  {showPopulationButtons && (
-    <div style={{ marginTop: "10px" }}>
-      {["2019", "2020", "2021"].map((year) => (
-        <button
-          key={year}
-          style={{
-            display: "block",
-            width: "100%",
-            backgroundColor: selectedYear1 === year ? "rgba(0, 86, 179, 0.9)" : "rgba(0, 123, 255, 0.8)", // Change color if selected
-            color: "#fff",
-            border: "none",
-            padding: "10px",
-            marginBottom: "10px",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "background-color 0.2s",
-          }}
-          onClick={() => handleYearButtonClick1(year)}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(0, 86, 179, 0.8)")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = selectedYear1 === year ? "rgba(0, 86, 179, 0.9)" : "rgba(0, 123, 255, 0.8)")}
-        >
-          {year}
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-
-{/* Flood Button and Year Selection on Right Side */}
-<div className="mt-20 bg-gray-100 bg-opacity-60 backdrop-blur-md rounded-lg p-4 shadow-lg float-right">
-  <button
-    style={{
-      display: "block",
-      width: "100%",
-      backgroundColor: "rgba(0, 123, 255, 0.8)", // Transparent blue background
-      color: "#fff",
-      border: "none",
-      padding: "10px 20px",
-      marginBottom: "10px",
-      borderRadius: "8px",
-      cursor: "pointer",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      transition: "background-color 0.2s",
-    }}
-    onClick={() => setShowFloodButtons(!showFloodButtons)}
-    onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(0, 86, 179, 0.8)")}
-    onMouseLeave={(e) => (e.target.style.backgroundColor = "rgba(0, 123, 255, 0.8)")}
-  >
-    Flood
-  </button>
-
-  {/* Year Buttons for Flood */}
-  {showFloodButtons && (
-    <div style={{ marginTop: "10px" }}>
-      {["2019", "2020", "2021"].map((year) => (
-        <button
-          key={year}
-          style={{
-            display: "block",
-            width: "100%",
-            backgroundColor: selectedYear === year ? "rgba(0, 86, 179, 0.9)" : "rgba(0, 123, 255, 0.8)", // Change color if selected
-            color: "#fff",
-            border: "none",
-            padding: "10px",
-            marginBottom: "10px",
-            borderRadius: "8px",
-            cursor: "pointer",
-            transition: "background-color 0.2s",
-          }}
-          onClick={() => handleYearButtonClick(year)}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = "rgba(0, 86, 179, 0.8)")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = selectedYear === year ? "rgba(0, 86, 179, 0.9)" : "rgba(0, 123, 255, 0.8)")}
-        >
-          {year}
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-
-    
-    </div>
 
 
 
+   
+      {/* Buttons Container */}
+      <div className={styles.buttonsContainer}>
+        {/* "Show Flood Areas" Button */}
+        <div className={styles.buttonGroup}>
+          <button
+            className={`${styles.button} ${showFlood ? styles.activeButton : ""}`}
+            onClick={() => setShowFlood(!showFlood)}
+            aria-pressed={showFlood}
+            aria-label={showFlood ? "Predict Flood Areas" : "Show Flood Areas"}
+          >
+            {showFlood ? "Predict Flood Areas" : "Show Flood Areas"}
+          </button>
 
+          {/* Year Buttons for Flood */}
 
+        </div>
+
+        {/* "Flood" Button */}
+        <div className={styles.buttonGroup}>
+          <button
+            className={`${styles.button} ${showFloodButtons ? styles.activeButton : ""}`}
+            onClick={() => setShowFloodButtons(!showFloodButtons)}
+            aria-pressed={showFloodButtons}
+            aria-label={showFloodButtons ? "Hide Flood Areas" : "Show Flood Areas"}
+          >
+            Flood
+          </button>
+
+          {/* Year Buttons for Flood */}
+          {showFloodButtons && (
+            <div className={styles.subButtons}>
+              {["2019", "2020", "2021"].map((year) => (
+                <button
+                  key={year}
+                  className={`${styles.subButton} ${
+                    selectedYear === year ? styles.selectedSubButton : ""
+                  }`}
+                  onClick={() => handleYearButtonClick(year)}
+                  aria-pressed={selectedYear === year}
+                  aria-label={`Select year ${year}`}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* "Population" Button */}
+        <div className={styles.buttonGroup}>
+          <button
+            className={`${styles.button} ${showPopulationButtons ? styles.activeButton : ""}`}
+            onClick={() => setShowPopulationButtons(!showPopulationButtons)}
+            aria-pressed={showPopulationButtons}
+            aria-label={showPopulationButtons ? "Hide Population Areas" : "Show Population Areas"}
+          >
+            Population
+          </button>
+
+          {/* Year Buttons for Population */}
+          {showPopulationButtons && (
+            <div className={styles.subButtons}>
+              {["2019", "2020", "2021"].map((year) => (
+                <button
+                  key={year}
+                  className={`${styles.subButton} ${
+                    selectedYear1 === year ? styles.selectedSubButton : ""
+                  }`}
+                  onClick={() => handleYearButtonClick1(year)}
+                  aria-pressed={selectedYear1 === year}
+                  aria-label={`Select year ${year}`}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
        {/*Button done */}
 
    
@@ -772,12 +743,7 @@ return{
 
   </div>
 
-            {/* Button to toggle flood-prone areas */}
-            <button  className={styles.toggleButton}
-        onClick={() => setShowFlood(!showFlood)}
-      >
-        {showFlood ? "Predict Flood Areas" : "Show Flood Areas"}
-      </button>
+
 
 
       <MapContainer
